@@ -1,28 +1,67 @@
-import { Button, Typography } from "antd";
-import { getDatabase, ref, set } from "firebase/database";
+import type { FormInstance } from "antd";
+import { Button, Form, Input, Space } from "antd";
 import React from "react";
 
-import { app } from "./firebase";
+import { useFirebase } from "./context/Firebase";
 
-const { Title } = Typography;
+const SubmitButton = ({ form }: { form: FormInstance }) => {
+  const [submittable, setSubmittable] = React.useState(false);
 
-const db = getDatabase(app);
+  // Watch all values
+  const values = Form.useWatch([], form);
 
-const App: React.FC = () => {
-  const putData = () => {
-    set(ref(db, "users/"), {
-      id: 1,
-      name: "Rajan",
-      age: 30,
+  const firebase = useFirebase();
+
+  const handleSubmit = () => {
+    const values = form.getFieldsValue();
+    console.log(values);
+    firebase.putData({
+      key: "employees",
+      data: values,
     });
   };
+
+  React.useEffect(() => {
+    form.validateFields({ validateOnly: true }).then(
+      () => {
+        setSubmittable(true);
+      },
+      () => {
+        setSubmittable(false);
+      }
+    );
+  }, [values]);
+
   return (
-    <>
-      <Title>User Management</Title>
-      <Button onClick={putData} type="primary">
-        Test Firebase Connect
-      </Button>
-    </>
+    <Button
+      onClick={handleSubmit}
+      type="primary"
+      htmlType="submit"
+      disabled={!submittable}
+    >
+      Submit
+    </Button>
+  );
+};
+
+const App: React.FC = () => {
+  const [form] = Form.useForm();
+
+  return (
+    <Form form={form} name="validateOnly" layout="vertical" autoComplete="off">
+      <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item name="age" label="Age" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item>
+        <Space>
+          <SubmitButton form={form} />
+          <Button htmlType="reset">Reset</Button>
+        </Space>
+      </Form.Item>
+    </Form>
   );
 };
 
