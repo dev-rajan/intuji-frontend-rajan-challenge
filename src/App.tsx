@@ -2,7 +2,7 @@ import type { FormInstance } from "antd";
 import { Button, Form, Input, Space } from "antd";
 import React from "react";
 
-import { useFirebase } from "./context/Firebase";
+import { useFirebase } from "@src/context/Firebase";
 
 const SubmitButton = ({ form }: { form: FormInstance }) => {
   const [submittable, setSubmittable] = React.useState(false);
