@@ -17,9 +17,10 @@ import { Route as rootRoute } from './routes/__root'
 // Create Virtual Routes
 
 const IndexLazyImport = createFileRoute('/')()
-const ListIndexLazyImport = createFileRoute('/list/')()
-const ListCreateIndexLazyImport = createFileRoute('/list/create/')()
-const ListIdIndexLazyImport = createFileRoute('/list/$id/')()
+const TeamsIndexLazyImport = createFileRoute('/teams/')()
+const EmployeesIndexLazyImport = createFileRoute('/employees/')()
+const TeamsCreateIndexLazyImport = createFileRoute('/teams/create/')()
+const EmployeesCreateIndexLazyImport = createFileRoute('/employees/create/')()
 
 // Create/Update Routes
 
@@ -28,23 +29,30 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
-const ListIndexLazyRoute = ListIndexLazyImport.update({
-  path: '/list/',
+const TeamsIndexLazyRoute = TeamsIndexLazyImport.update({
+  path: '/teams/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/list/index.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/teams/index.lazy').then((d) => d.Route))
 
-const ListCreateIndexLazyRoute = ListCreateIndexLazyImport.update({
-  path: '/list/create/',
+const EmployeesIndexLazyRoute = EmployeesIndexLazyImport.update({
+  path: '/employees/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/list/create/index.lazy').then((d) => d.Route),
+  import('./routes/employees/index.lazy').then((d) => d.Route),
 )
 
-const ListIdIndexLazyRoute = ListIdIndexLazyImport.update({
-  path: '/list/$id/',
+const TeamsCreateIndexLazyRoute = TeamsCreateIndexLazyImport.update({
+  path: '/teams/create/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/list/$id/index.lazy').then((d) => d.Route),
+  import('./routes/teams/create/index.lazy').then((d) => d.Route),
+)
+
+const EmployeesCreateIndexLazyRoute = EmployeesCreateIndexLazyImport.update({
+  path: '/employees/create/',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/employees/create/index.lazy').then((d) => d.Route),
 )
 
 // Populate the FileRoutesByPath interface
@@ -55,16 +63,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/list/': {
-      preLoaderRoute: typeof ListIndexLazyImport
+    '/employees/': {
+      preLoaderRoute: typeof EmployeesIndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/list/$id/': {
-      preLoaderRoute: typeof ListIdIndexLazyImport
+    '/teams/': {
+      preLoaderRoute: typeof TeamsIndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/list/create/': {
-      preLoaderRoute: typeof ListCreateIndexLazyImport
+    '/employees/create/': {
+      preLoaderRoute: typeof EmployeesCreateIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/teams/create/': {
+      preLoaderRoute: typeof TeamsCreateIndexLazyImport
       parentRoute: typeof rootRoute
     }
   }
@@ -74,9 +86,10 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexLazyRoute,
-  ListIndexLazyRoute,
-  ListIdIndexLazyRoute,
-  ListCreateIndexLazyRoute,
+  EmployeesIndexLazyRoute,
+  TeamsIndexLazyRoute,
+  EmployeesCreateIndexLazyRoute,
+  TeamsCreateIndexLazyRoute,
 ])
 
 /* prettier-ignore-end */

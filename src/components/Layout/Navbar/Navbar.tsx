@@ -20,6 +20,7 @@ const Navbar = () => {
         level={3}
         style={{
           color: "#00000066",
+          margin: "12px 0"
         }}
       >
         Navigation Bar
