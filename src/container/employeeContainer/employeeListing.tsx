@@ -14,6 +14,7 @@ import { ActionProps } from "@src/types/types";
 import { FiPlus } from "react-icons/fi";
 
 interface DataType {
+  id: string;
   key: string;
   full_name: string;
   current_team: string;
@@ -64,7 +65,7 @@ const TableAction: FC<ActionProps> = ({ record }) => {
 
   return (
     <Space>
-      <EmployeeCard open={modalOpen} onClose={onModalClose} />
+      <EmployeeCard open={modalOpen} onClose={onModalClose} record={record} />
 
       {deletingId && (
         <DeleteModal
@@ -99,8 +100,8 @@ const TableAction: FC<ActionProps> = ({ record }) => {
 const columns: TableProps<DataType>["columns"] = [
   {
     title: "ID",
-    dataIndex: "key",
-    key: "key",
+    dataIndex: "id",
+    key: "id",
   },
   {
     title: "Full Name",
@@ -136,12 +137,13 @@ const columns: TableProps<DataType>["columns"] = [
   {
     title: "Action",
     key: "action",
-    render: () => <TableAction />,
+    render: (record) => <TableAction record={record} />,
   },
 ];
 
 const data: DataType[] = [
   {
+    id: "1",
     key: "1",
     full_name: "Rajan Shrestha",
     current_team: "Tech Team",
@@ -151,6 +153,7 @@ const data: DataType[] = [
     billable_hour: "40 hours/week",
   },
   {
+    id: "2",
     key: "2",
     full_name: "Rajan Shrestha",
     current_team: "Tech Team",
@@ -160,6 +163,7 @@ const data: DataType[] = [
     billable_hour: "40 hours/week",
   },
   {
+    id: "3",
     key: "3",
     full_name: "Rajan Shrestha",
     current_team: "Tech Team",

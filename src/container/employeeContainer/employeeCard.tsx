@@ -17,8 +17,11 @@ const { Title, Text } = Typography;
 type EmployeeCardProps = {
   open: boolean;
   onClose(): void;
+  record: object;
 };
-const EmployeeCard = ({ open, onClose }: EmployeeCardProps) => {
+const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
+  console.log(record, "haha");
+
   return (
     <Drawer
       title={
@@ -45,9 +48,9 @@ const EmployeeCard = ({ open, onClose }: EmployeeCardProps) => {
       />
       <Space direction="vertical">
         <Title level={4} style={{ marginBottom: "0" }}>
-          Carl Jhonson
+          {record.full_name}
         </Title>
-        <Text style={{ marginBottom: "1em" }}>carl@gmail.com</Text>
+        <Text style={{ marginBottom: "1em" }}>{record.email}</Text>
         <Button
           style={{
             fontWeight: "bold",
@@ -56,7 +59,7 @@ const EmployeeCard = ({ open, onClose }: EmployeeCardProps) => {
             borderRadius: "18px",
           }}
         >
-          Employee
+          {record.designation}
         </Button>
       </Space>
 
@@ -75,7 +78,7 @@ const EmployeeCard = ({ open, onClose }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            Developer
+            {record.designation}
           </Text>
         </Col>
         <Col span={12}>
@@ -88,7 +91,7 @@ const EmployeeCard = ({ open, onClose }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            0458 126 587
+            {record.mobile}
           </Text>
         </Col>
 
@@ -168,20 +171,23 @@ const EmployeeCard = ({ open, onClose }: EmployeeCardProps) => {
         </Col>
       </Row>
 
-      <Button
-        style={{
-          marginTop: "1em",
-          backgroundColor: "#F7921E",
-          borderRadius: "5px",
-          color: "white",
-          width: "100%",
-        }}
-      >
-        <Link to="/employees/create">
-          <MdEdit size={20} style={{ verticalAlign: "top", marginRight: '0.5em' }} />
+      <Link to="/employees/create">
+        <Button
+          style={{
+            marginTop: "1em",
+            backgroundColor: "#F7921E",
+            borderRadius: "5px",
+            color: "white",
+            width: "100%",
+          }}
+        >
+          <MdEdit
+            size={20}
+            style={{ verticalAlign: "top", marginRight: "0.5em" }}
+          />
           Edit Profile
-        </Link>
-      </Button>
+        </Button>
+      </Link>
     </Drawer>
   );
 };

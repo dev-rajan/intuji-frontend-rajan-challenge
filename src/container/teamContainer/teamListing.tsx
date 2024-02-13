@@ -22,6 +22,7 @@ import { useDeleteData } from "@src/services/listing.services";
 import { ActionProps } from "@src/types/types";
 
 interface DataType {
+  id: string;
   key: string;
   team_name: string;
   members: string[];
@@ -113,12 +114,13 @@ export const columns: TableProps<DataType>["columns"] = [
   {
     title: "Action",
     key: "action",
-    render: () => <TableAction />,
+    render: (record) => <TableAction record={record} />,
   },
 ];
 
 export const data: DataType[] = [
   {
+    id: "1",
     key: "1",
     team_name: "Team 1",
     members: ["Rajan", "Rajesh", "Rajeev", "Rajendra", "Rajat", "Rajnish"],
@@ -133,6 +135,7 @@ export const data: DataType[] = [
     man_hour: "27,000",
   },
   {
+    id: "2",
     key: "2",
     team_name: "Team 2",
     members: ["Rajan", "Rajesh", "Rajeev", "Rajendra", "Rajat", "Rajnish"],
@@ -147,6 +150,7 @@ export const data: DataType[] = [
     man_hour: "20,000",
   },
   {
+    id: "3",
     key: "3",
     team_name: "Team 3",
     members: ["Rajan", "Rajesh", "Rajeev", "Rajendra", "Rajat", "Rajnish"],
