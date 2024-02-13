@@ -60,7 +60,7 @@ const Index = () => {
 
   return (
     <>
-      <Layout style={{background: 'none'}}>
+      <Layout style={{ background: "none" }}>
         <Breadcrumb
           style={{
             fontSize: "12px",
@@ -74,7 +74,6 @@ const Index = () => {
             },
             {
               title: "Teams",
-              href: "/teams",
             },
             {
               title: "Add Team",
@@ -88,21 +87,21 @@ const Index = () => {
 
         <Form
           layout="vertical"
-          style={{ position: "relative" }}
+          style={{ marginTop: "2em" }}
           onFinish={handleSubmit((data) => {
             data.team_members = getValues("team_members");
           })}
         >
           <Row gutter={[50, 16]}>
-            <Col span={6} style={{ textAlign: "right" }}>
+            <Col span={5} style={{ textAlign: "right" }}>
               <Title level={5} style={{ marginTop: "0", fontWeight: "bold" }}>
                 Basic Information
               </Title>
             </Col>
 
-            <Col span={18}>
+            <Col span={19}>
               <Row gutter={[16, 16]}>
-                <Col span={6}>
+                <Col span={8}>
                   <FormItem
                     control={control}
                     name="team_name"
@@ -119,7 +118,7 @@ const Index = () => {
                   </FormItem>
                 </Col>
 
-                <Col span={6}>
+                <Col span={8}>
                   <FormItem
                     control={control}
                     name="team_password"
@@ -147,13 +146,13 @@ const Index = () => {
           </Row>
 
           <Row gutter={[50, 16]}>
-            <Col span={6} style={{ textAlign: "right" }}>
+            <Col span={5} style={{ textAlign: "right" }}>
               <Title level={5} style={{ marginTop: "0", fontWeight: "bold" }}>
                 Members
               </Title>
             </Col>
 
-            <Col span={18}>
+            <Col span={19}>
               <Row style={{ display: "grid" }} gutter={[0, 0]}>
                 <Col span={8}>
                   <FormItem
@@ -184,7 +183,7 @@ const Index = () => {
                   </FormItem>
                 </Col>
 
-                <Col span={6}>
+                <Col span={8}>
                   <FormItem
                     control={control}
                     name="billable_hours"
@@ -217,13 +216,13 @@ const Index = () => {
           </Row>
 
           <Row gutter={[50, 16]}>
-            <Col span={6} style={{ textAlign: "right" }}>
+            <Col span={5} style={{ textAlign: "right" }}>
               <Title level={5} style={{ marginTop: "0", fontWeight: "bold" }}>
                 Team QR
               </Title>
             </Col>
 
-            <Col span={18}>
+            <Col span={19}>
               <Flex>
                 <QRCode
                   size={118}
@@ -260,9 +259,21 @@ const Index = () => {
             </Col>
           </Row>
 
-          <Button type="primary" htmlType="submit">
-            Save
-          </Button>
+          <Row
+            style={{
+              marginTop: "1em",
+              width: "100%",
+              background: "#eee",
+              borderRadius: "5px",
+              padding: '1em'
+            }}
+          >
+            <Col span={6}>
+              <Button type="primary" htmlType="submit">
+                Save
+              </Button>
+            </Col>
+          </Row>
         </Form>
       </Layout>
     </>
