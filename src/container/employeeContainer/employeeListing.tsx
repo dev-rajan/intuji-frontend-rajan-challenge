@@ -47,7 +47,7 @@ const TableAction: FC<ActionProps> = ({ record }) => {
   const handleDelete = () => {
     setDeleteLoading(true);
     if (record?.id) {
-      deleteDoc(doc(database, "teams", record.id)).then(() => {
+      deleteDoc(doc(database, "employees", record.id)).then(() => {
         setDeleteLoading(false);
         setDeletingId(null);
       });

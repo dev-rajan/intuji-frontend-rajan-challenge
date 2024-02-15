@@ -17,11 +17,13 @@ import {
   Row,
   Select,
   Typography,
+  message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFirebase } from "@src/context/Firebase";
+import { database, useFirebase } from "@src/context/Firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useEffect } from "react";
 import { FormItem } from "react-hook-form-antd";
 import * as z from "zod";
@@ -51,12 +53,39 @@ const Index = () => {
   });
 
   useEffect(() => {
-    reset({
-      team_name: "",
-      team_password: "",
-      team_members: [],
-      billable_hours: "",
-    });
+    const userId = location.href
+      ?.split("/")
+      .pop()
+      ?.split("?")[1]
+      ?.split("=")[1];
+
+    const getData = async () => {
+      if (userId) {
+        const docRef = doc(database, "teams", userId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          console.log("Document data:", docSnap.data());
+          reset(docSnap.data());
+
+          const updateSuccess = () => {
+            message.success("Team data updated successfully");
+          };
+
+          updateDoc(docRef, getValues())
+            .then(() => {
+              updateSuccess();
+            })
+            .catch((error) => {
+              message.error("Error updating team document:", error);
+            });
+        } else {
+          message.info("No such document!");
+        }
+      }
+    };
+
+    getData();
   }, []);
 
   const handleCreateTeam = (data) => {

@@ -45,6 +45,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
         style={{ display: "flex" }}
         size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }}
         icon={<UserOutlined />}
+        src={record.user_image}
       />
       <Space direction="vertical">
         <Title level={4} style={{ marginBottom: "0" }}>
@@ -125,7 +126,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            15/18/2022
+            {record.start_time}
           </Text>
         </Col>
         <Col span={12}>
@@ -138,7 +139,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            Staff
+            {record.position}
           </Text>
         </Col>
 

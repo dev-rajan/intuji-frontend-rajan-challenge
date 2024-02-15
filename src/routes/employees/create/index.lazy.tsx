@@ -1,7 +1,9 @@
-import { RightOutlined, UploadOutlined } from "@ant-design/icons";
+import RightOutlined from "@ant-design/icons/RightOutlined";
+import UploadOutlined from "@ant-design/icons/UploadOutlined";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFirebase } from "@src/context/Firebase";
+import { database, useFirebase } from "@src/context/Firebase";
 import { createLazyFileRoute } from "@tanstack/react-router";
+
 import {
   Avatar,
   Breadcrumb,
@@ -24,7 +26,10 @@ import {
   UploadProps,
   message,
 } from "antd";
-import { useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import moment from "moment";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FormItem } from "react-hook-form-antd";
 import * as z from "zod";
@@ -51,16 +56,14 @@ const schema = z.object({
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
-const getBase64 = (file: FileType): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+const storage = getStorage();
 
 const Index = () => {
   const [checked, setChecked] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [userData, setUserData] = useState<Record<string, unknown>>({});
+  console.log("🚀 ~ Index ~ userData:", userData);
+
   const { postData } = useFirebase();
 
   const props: UploadProps = {
@@ -70,33 +73,20 @@ const Index = () => {
     headers: {
       authorization: "authorization-text",
     },
-    onChange(info) {
-      if (info.file.status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === "done") {
-        message.success(`${info.file.name} file uploaded successfully`);
-      } else if (info.file.status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
+
     progress: {
       strokeColor: {
         "0%": "#108ee9",
         "100%": "#87d068",
       },
-      strokeWidth: 3,
+      size: 3,
       format: (percent) => percent && `${parseFloat(percent.toFixed(2))}%`,
     },
   };
 
-  const onChange: CheckboxProps["onChange"] = (e) => {
-    setChecked(e.target.checked);
-  };
 
   const billableLabel = `${checked ? "This user is billable" : "Billable User"}`;
-
-  const { control, handleSubmit, getValues, reset } = useForm({
+  const { control, handleSubmit, getValues, reset, setValue } = useForm({
     defaultValues: {
       user_image: "",
       name: "",
@@ -117,23 +107,121 @@ const Index = () => {
     resolver: zodResolver(schema),
   });
 
-  const handleCreateEmployee = (data) => {
-    // data.user_image = getValues("user_image");
-    data.middle_name = getValues("middle_name");
-    // data.dob = getValues("dob");
-    // data.start_time = getValues("start_time");
-    // data.end_time = getValues("end_time");
-    data.isBillable = getValues("isBillable");
-    data.billable_hours = getValues("billable_hours");
-    data.gender = getValues("gender");
-    data.team = getValues("team");
+  const displayImage = (file: FileType) => {
+    const reader = new FileReader();
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+    reader.onload = (readerEvent) => {
+      setImageUrl(readerEvent.target?.result as string);
+    };
+  };
 
-    const createSuccess = () => {
-      reset();
+  const handleUploadImage = async (file: FileType) => {
+    try {
+      const storageRef = ref(storage, file.name);
+
+      // Upload file to Firebase Storage
+      await uploadBytes(storageRef, file, {
+        contentType: file.type, // Set proper content type
+      });
+
+      // Get download URL of the uploaded file
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Update the image URL in the component state or context
+      setImageUrl(downloadURL);
+
+      return downloadURL; // Return the download URL
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      // Handle error here, maybe show a message to the user
+      throw error; // Re-throw the error for external handling if needed
+    }
+  };
+
+  const handleCreateEmployee = (data) => {
+    handleUploadImage(getValues("user_image")?.file.originFileObj as FileType)
+      .then((res) => {
+        data.user_image = res;
+        data.middle_name = getValues("middle_name");
+        data.dob = getValues("dob");
+        data.start_time = getValues("start_time");
+        data.end_time = getValues("end_time");
+        data.isBillable = checked;
+        data.billable_hours = getValues("billable_hours");
+        data.gender = getValues("gender");
+        data.team = getValues("team");
+
+        console.log(data, "haha");
+
+        const createSuccess = () => {
+          reset();
+          setValue("dob", "");
+          setValue("gender", "");
+          setValue("start_time", "");
+          setValue("end_time", "");
+          setValue("team", "");
+          setValue("isBillable", false);
+          setValue("billable_hours", "");
+          message.success("Employee created successfully");
+          setImageUrl(null);
+        };
+
+        postData({ key: "employees", data, cb: createSuccess });
+      })
+      .catch((error) => {
+        console.error("Error uploading image:", error);
+      });
+
+    return;
+  };
+
+  const handleImageUpload = (info) => {
+    if (info.file.status === "done") {
+      message.success(`${info.file.name} file uploaded successfully`);
+      displayImage(info.file.originFileObj as FileType);
+    } else if (info.file.status === "error") {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  };
+
+  const handleDob = (date: Date) => {
+    setValue("dob", moment(date).format("YYYY-MM-DD"));
+  };
+
+  useEffect(() => {
+    const userId = location.href
+      ?.split("/")
+      .pop()
+      ?.split("?")[1]
+      ?.split("=")[1];
+
+    const getData = async () => {
+      if (userId) {
+        const docRef = doc(database, "employees", userId);
+
+        const docSnap = await getDoc(docRef);
+        console.log("🚀 ~ getData ~ querySnapshot:", docSnap);
+        if (docSnap.exists()) {
+          console.log("Document data:", docSnap.data());
+
+          setUserData(docSnap.data() as Record<string, unknown>);
+          reset(docSnap.data());
+          setValue("dob", moment(docSnap.data().dob).format("YYYY-MM-DD"));
+          setValue("start_time", docSnap.data().start_time);
+          setValue("end_time", docSnap.data().end_time);
+          setChecked(docSnap.data().isBillable);
+          setImageUrl(docSnap.data().user_image as string)
+        } else {
+          // docSnap.data() will be undefined in this case
+          console.log("No such document!");
+        }
+      }
     };
 
-    postData({ key: "employees", data, cb: createSuccess });
-  };
+    getData();
+  }, []);
 
   return (
     <>
@@ -172,7 +260,7 @@ const Index = () => {
             style={{ marginBottom: "3em", alignItems: "center" }}
           >
             <Col span={6} style={{ textAlign: "right" }}>
-              <Avatar size={100} src={getValues("user_image")} />
+              <Avatar size={100} src={imageUrl} />
             </Col>
 
             <Col span={18}>
@@ -182,19 +270,34 @@ const Index = () => {
                 name="user_image"
                 label="Profile Image"
               >
-                <Upload {...props}>
-                  <Button
-                    style={{
-                      background: "#20BC08",
-                      color: "white",
-                      borderRadius: "5px",
-                      border: "none",
-                    }}
-                    icon={<UploadOutlined />}
-                  >
-                    Upload Profile Image
-                  </Button>
-                </Upload>
+                <Controller
+                  name="user_image"
+                  control={control}
+                  defaultValue=""
+                  render={({ field: { onChange } }) => {
+                    return (
+                      <Upload
+                        {...props}
+                        onChange={(info) => {
+                          onChange(info); // Update the form value
+                          handleImageUpload(info); // Call handleImageUpload function>
+                        }}
+                      >
+                        <Button
+                          style={{
+                            background: "#20BC08",
+                            color: "white",
+                            borderRadius: "5px",
+                            border: "none",
+                          }}
+                          icon={<UploadOutlined />}
+                        >
+                          Upload Profile Image
+                        </Button>
+                      </Upload>
+                    );
+                  }}
+                />
               </FormItem>
             </Col>
           </Row>
@@ -255,7 +358,8 @@ const Index = () => {
                     <Controller
                       name="dob"
                       control={control}
-                      render={({ field: { onChange } }) => {
+                      defaultValue=""
+                      render={({ field: { onChange, value } }) => {
                         return (
                           <DatePicker
                             style={{
@@ -264,8 +368,11 @@ const Index = () => {
                               background: "#F1F1F1",
                               color: "#656669",
                             }}
-                            onChange={onChange}
-                            placeholder="DD-MM-YYYY"
+                            // value={value}
+                            onChange={(date) => {
+                              onChange(date);
+                              handleDob(date);
+                            }}
                           />
                         );
                       }}
@@ -278,7 +385,8 @@ const Index = () => {
                     <Controller
                       name="gender"
                       control={control}
-                      render={({ field: { onChange } }) => {
+                      defaultValue=""
+                      render={({ field: { onChange, value } }) => {
                         return (
                           <Select
                             style={{
@@ -286,6 +394,7 @@ const Index = () => {
                               background: "#F1F1F1",
                               color: "#656669",
                             }}
+                            value={value}
                             placeholder="Select Gender"
                             onChange={onChange}
                             options={[
@@ -375,12 +484,16 @@ const Index = () => {
                     <Controller
                       name="start_time"
                       control={control}
-                      render={({ field: { onChange } }) => {
+                      defaultValue=""
+                      render={({ field: { onChange, value } }) => {
                         return (
                           <TimePicker
                             use12Hours
+                            // value={value}
                             format="hh:mm A"
-                            onChange={onChange}
+                            onChange={(time, timeString) => {
+                              onChange(timeString);
+                            }}
                             placeholder="HH-MM"
                             style={{
                               borderRadius: "5px",
@@ -405,7 +518,9 @@ const Index = () => {
                           <TimePicker
                             use12Hours
                             format="hh:mm A"
-                            onChange={onChange}
+                            onChange={(time, timeString) => {
+                              onChange(timeString);
+                            }}
                             placeholder="HH-MM"
                             style={{
                               borderRadius: "5px",
@@ -461,7 +576,7 @@ const Index = () => {
                     <Controller
                       name="team"
                       control={control}
-                      render={({ field: { onChange } }) => {
+                      render={({ field: { onChange, value } }) => {
                         return (
                           <Select
                             style={{
@@ -471,6 +586,7 @@ const Index = () => {
                             }}
                             placeholder="Choose Team"
                             onChange={onChange}
+                            value={value}
                             options={[
                               { value: "team1", label: "Team 1" },
                               { value: "team2", label: "Team 2" },
@@ -501,23 +617,31 @@ const Index = () => {
             </Col>
 
             <Col span={18}>
-              <Checkbox
-                style={{ marginBottom: "1em" }}
-                checked={checked}
+              <Controller
                 name="isBillable"
-                onChange={onChange}
-              >
-                {billableLabel}
-              </Checkbox>
+                control={control}
+                render={({ field: { onChange, value } }) => {
+                  return (
+                    <Checkbox
+                      style={{ marginBottom: "1em" }}
+                      checked={value}
+                      name="isBillable"
+                      onChange={onChange}
+                    >
+                      {billableLabel}
+                    </Checkbox>
+                  );
+                }}
+              ></Controller>
 
               <Row gutter={[16, 16]}>
                 <Col span={8}>
-                  <FormItem
-                    control={control}
-                    name="billable_hours"
-                    label="Billable Hours"
-                  >
-                    <Space.Compact style={{ width: "100%" }}>
+                  <Space.Compact style={{ width: "100%" }}>
+                    <FormItem
+                      control={control}
+                      name="billable_hours"
+                      label="Billable Hours"
+                    >
                       <Input
                         placeholder="Enter Billable Hours"
                         style={{
@@ -538,8 +662,8 @@ const Index = () => {
                       >
                         Hours
                       </Button>
-                    </Space.Compact>
-                  </FormItem>
+                    </FormItem>
+                  </Space.Compact>
                 </Col>
               </Row>
             </Col>
