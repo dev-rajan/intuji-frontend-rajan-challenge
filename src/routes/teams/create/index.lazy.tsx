@@ -16,13 +16,13 @@ import {
   QRCode,
   Row,
   Select,
-  SelectProps,
-  Space,
   Typography,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useFirebase } from "@src/context/Firebase";
+import { useEffect } from "react";
 import { FormItem } from "react-hook-form-antd";
 import * as z from "zod";
 
@@ -38,25 +38,36 @@ const schema = z.object({
 });
 
 const Index = () => {
-  const { control, handleSubmit, getValues } = useForm({
+  const { postData } = useFirebase();
+
+  const { control, handleSubmit, getValues, reset } = useForm({
     defaultValues: {
       team_name: "",
       team_password: "",
       team_members: [],
       billable_hours: "",
-      antdSelect: "",
     },
     resolver: zodResolver(schema),
   });
 
-  const options: SelectProps["options"] = [];
-
-  for (let i = 10; i < 36; i++) {
-    options.push({
-      label: i.toString(36) + i,
-      value: i.toString(36) + i,
+  useEffect(() => {
+    reset({
+      team_name: "",
+      team_password: "",
+      team_members: [],
+      billable_hours: "",
     });
-  }
+  }, []);
+
+  const handleCreateTeam = (data) => {
+    data.team_members = getValues("team_members");
+
+    const createSuccess = () => {
+      reset();
+    };
+
+    postData({ key: "teams", data, cb: createSuccess });
+  };
 
   return (
     <>
@@ -88,9 +99,7 @@ const Index = () => {
         <Form
           layout="vertical"
           style={{ marginTop: "2em" }}
-          onFinish={handleSubmit((data) => {
-            data.team_members = getValues("team_members");
-          })}
+          onFinish={handleSubmit(handleCreateTeam)}
         >
           <Row gutter={[50, 16]}>
             <Col span={5} style={{ textAlign: "right" }}>
@@ -163,11 +172,13 @@ const Index = () => {
                     <Controller
                       name="team_members"
                       control={control}
-                      render={({ field: { onChange } }) => {
+                      defaultValue={[]}
+                      render={({ field: { onChange, value } }) => {
                         return (
                           <Select
                             mode="multiple"
                             allowClear
+                            value={value}
                             style={{
                               borderRadius: "5px",
                               background: "#F1F1F1",
@@ -175,7 +186,11 @@ const Index = () => {
                             }}
                             placeholder="Select Employees"
                             onChange={onChange}
-                            options={options}
+                            options={[
+                              { value: "member 1", label: "Member 1" },
+                              { value: "member 2", label: "Member 2" },
+                              { value: "member 3", label: "Member 3" },
+                            ]}
                           />
                         );
                       }}
@@ -189,19 +204,19 @@ const Index = () => {
                     name="billable_hours"
                     label="Billable Hours"
                   >
-                    <Space.Compact style={{ width: "100%" }}>
-                      <Input
-                        placeholder="Enter Billable Hours"
-                        style={{
-                          borderRadius: "5px",
-                          background: "#F1F1F1",
-                          color: "#656669",
-                        }}
-                      />
-                      <Button style={{ background: "#1E83F7", color: "white" }}>
-                        Hours
-                      </Button>
-                    </Space.Compact>
+                    {/* <Space.Compact style={{ width: "100%" }}> */}
+                    <Input
+                      placeholder="Enter Billable Hours"
+                      style={{
+                        borderRadius: "5px",
+                        background: "#F1F1F1",
+                        color: "#656669",
+                      }}
+                    />
+                    <Button style={{ background: "#1E83F7", color: "white" }}>
+                      Hours
+                    </Button>
+                    {/* </Space.Compact> */}
                   </FormItem>
                 </Col>
               </Row>
@@ -265,7 +280,7 @@ const Index = () => {
               width: "100%",
               background: "#eee",
               borderRadius: "5px",
-              padding: '1em'
+              padding: "1em",
             }}
           >
             <Col span={6}>

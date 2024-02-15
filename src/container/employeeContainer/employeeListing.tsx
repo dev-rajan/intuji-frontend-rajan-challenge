@@ -1,17 +1,25 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Input, Space, Table, TableProps, Tooltip } from "antd";
-import { FC, useState } from "react";
+import { Input, Space, Table, TableProps, Tooltip, Typography } from "antd";
+import { FC, useEffect, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
-import { toast } from "react-toastify";
 
 import { SearchOutlined } from "@ant-design/icons";
 import DeleteModal from "@src/components/DeleteModal";
 import EmployeeCard from "@src/container/employeeContainer/employeeCard";
-import { useDeleteData } from "@src/services/listing.services";
+import { database } from "@src/context/Firebase";
 import { ActionProps } from "@src/types/types";
+import {
+  DocumentData,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+} from "firebase/firestore";
 import { FiPlus } from "react-icons/fi";
+
+const { Text } = Typography;
 
 interface DataType {
   id: string;
@@ -26,7 +34,6 @@ interface DataType {
 
 const TableAction: FC<ActionProps> = ({ record }) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -37,26 +44,14 @@ const TableAction: FC<ActionProps> = ({ record }) => {
     setModalOpen(modalOpen ? false : true);
   };
 
-  const { mutate } = useDeleteData({ url: `/users/${deletingId}` });
-
   const handleDelete = () => {
     setDeleteLoading(true);
-    mutate(
-      {},
-      {
-        onSuccess: () => {
-          toast("Deleted Successfully", { type: "success" });
-          setDeletingId(null);
-          queryClient.invalidateQueries({ queryKey: ["listing-data"] });
-        },
-        onError: () => {
-          toast("Unable to delete data", { type: "error" });
-        },
-        onSettled: () => {
-          setDeleteLoading(false);
-        },
-      }
-    );
+    if (record?.id) {
+      deleteDoc(doc(database, "teams", record.id)).then(() => {
+        setDeleteLoading(false);
+        setDeletingId(null);
+      });
+    }
   };
 
   const handleDeleteCancel = () => {
@@ -84,13 +79,18 @@ const TableAction: FC<ActionProps> = ({ record }) => {
       <Tooltip title="Edit">
         <MdEdit
           style={{ color: "#6c737f", cursor: "pointer", fontSize: 20 }}
-          onClick={() => {}}
+          onClick={() =>
+            navigate({
+              to: "/employees/create",
+              search: { editingId: record?.id },
+            })
+          }
         />
       </Tooltip>
       <Tooltip title="Delete">
         <MdDelete
           style={{ color: "#ff0b0b91", cursor: "pointer", fontSize: 20 }}
-          onClick={() => setDeletingId(record.id || null)}
+          onClick={() => setDeletingId(record?.id || null)}
         />
       </Tooltip>
     </Space>
@@ -105,14 +105,21 @@ const columns: TableProps<DataType>["columns"] = [
   },
   {
     title: "Full Name",
-    dataIndex: "full_name",
-    key: "full_name",
-    // render: (text) => <a>{text}</a>,
+    key: "name",
+    render: (record) => {
+      console.log(record, "hahaha");
+
+      return (
+        <Text>
+          {record.name + " " + record.middle_name + " " + record.surname}
+        </Text>
+      );
+    },
   },
   {
     title: "Current Team",
-    dataIndex: "current_team",
-    key: "current_team",
+    dataIndex: "team",
+    key: "team",
   },
   {
     title: "Mobile Number",
@@ -126,13 +133,13 @@ const columns: TableProps<DataType>["columns"] = [
   },
   {
     title: "Designation",
-    dataIndex: "designation",
-    key: "designation",
+    dataIndex: "position",
+    key: "position",
   },
   {
     title: "Billable Hours",
-    dataIndex: "billable_hour",
-    key: "billable_hour",
+    dataIndex: "billable_hours",
+    key: "billable_hours",
   },
   {
     title: "Action",
@@ -141,39 +148,24 @@ const columns: TableProps<DataType>["columns"] = [
   },
 ];
 
-const data: DataType[] = [
-  {
-    id: "1",
-    key: "1",
-    full_name: "Rajan Shrestha",
-    current_team: "Tech Team",
-    mobile: "+61 8386 3482",
-    email: "abc@mail.com",
-    designation: "Developer",
-    billable_hour: "40 hours/week",
-  },
-  {
-    id: "2",
-    key: "2",
-    full_name: "Rajan Shrestha",
-    current_team: "Tech Team",
-    mobile: "+61 8386 3482",
-    email: "abc@mail.com",
-    designation: "Developer",
-    billable_hour: "40 hours/week",
-  },
-  {
-    id: "3",
-    key: "3",
-    full_name: "Rajan Shrestha",
-    current_team: "Tech Team",
-    mobile: "+61 8386 3482",
-    email: "abc@mail.com",
-    designation: "Developer",
-    billable_hour: "40 hours/week",
-  },
-];
 const EmployeeListing = () => {
+  const [employees, setEmployees] = useState<Array<DocumentData>>([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      const q = query(collection(database, "employees"));
+
+      const querySnapshot = await getDocs(q);
+      const teamsData: Array<DocumentData> = [];
+      querySnapshot.forEach((doc) => {
+        teamsData.push({ id: doc.id, ...doc.data() } as DocumentData);
+      });
+      setEmployees(teamsData);
+    };
+
+    getData();
+  }, []);
+
   return (
     <>
       <Space
@@ -203,7 +195,7 @@ const EmployeeListing = () => {
           Add Employee
         </Link>
       </Space>
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={employees} />
     </>
   );
 };

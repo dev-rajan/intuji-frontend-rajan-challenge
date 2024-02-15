@@ -1,7 +1,9 @@
 import { RightOutlined, UploadOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useFirebase } from "@src/context/Firebase";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import {
+  Avatar,
   Breadcrumb,
   Button,
   Checkbox,
@@ -59,6 +61,7 @@ const getBase64 = (file: FileType): Promise<string> =>
 
 const Index = () => {
   const [checked, setChecked] = useState(false);
+  const { postData } = useFirebase();
 
   const props: UploadProps = {
     maxCount: 1,
@@ -93,7 +96,7 @@ const Index = () => {
 
   const billableLabel = `${checked ? "This user is billable" : "Billable User"}`;
 
-  const { control, handleSubmit, getValues } = useForm({
+  const { control, handleSubmit, getValues, reset } = useForm({
     defaultValues: {
       user_image: "",
       name: "",
@@ -113,6 +116,24 @@ const Index = () => {
     },
     resolver: zodResolver(schema),
   });
+
+  const handleCreateEmployee = (data) => {
+    // data.user_image = getValues("user_image");
+    data.middle_name = getValues("middle_name");
+    // data.dob = getValues("dob");
+    // data.start_time = getValues("start_time");
+    // data.end_time = getValues("end_time");
+    data.isBillable = getValues("isBillable");
+    data.billable_hours = getValues("billable_hours");
+    data.gender = getValues("gender");
+    data.team = getValues("team");
+
+    const createSuccess = () => {
+      reset();
+    };
+
+    postData({ key: "employees", data, cb: createSuccess });
+  };
 
   return (
     <>
@@ -144,28 +165,19 @@ const Index = () => {
         <Form
           layout="vertical"
           style={{ position: "relative" }}
-          onFinish={handleSubmit((data) => {
-            data.user_image = getValues("user_image");
-            data.middle_name = getValues("middle_name");
-            data.dob = getValues("dob");
-            data.start_time = getValues("start_time");
-            data.end_time = getValues("end_time");
-            data.isBillable = getValues("isBillable");
-            data.billable_hours = getValues("billable_hours");
-            data.gender = getValues("gender");
-            data.team = getValues("team");
-            console.log(data, "haha");
-          })}
+          onFinish={handleSubmit(handleCreateEmployee)}
         >
-          <Row gutter={[50, 16]}>
+          <Row
+            gutter={[50, 16]}
+            style={{ marginBottom: "3em", alignItems: "center" }}
+          >
             <Col span={6} style={{ textAlign: "right" }}>
-              <Title level={5} style={{ marginTop: "0", fontWeight: "bold" }}>
-                Profile Picture
-              </Title>
+              <Avatar size={100} src={getValues("user_image")} />
             </Col>
 
             <Col span={18}>
               <FormItem
+                style={{ marginBottom: "0" }}
                 control={control}
                 name="user_image"
                 label="Profile Image"
@@ -184,13 +196,6 @@ const Index = () => {
                   </Button>
                 </Upload>
               </FormItem>
-              <Divider
-                style={{
-                  borderBlockStart: "2px solid #C3C1BF",
-                  margin: "0.5em 0 2em 0",
-                  width: "100%",
-                }}
-              />
             </Col>
           </Row>
           <Row gutter={[50, 16]}>

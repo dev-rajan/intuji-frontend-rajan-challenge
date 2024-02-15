@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set } from "firebase/database";
+import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { createContext, useContext } from "react";
 
 interface Props {
@@ -11,6 +11,7 @@ interface IFirebaseContext {
   data: {
     [key: string]: string;
   };
+  cb: () => void;
 }
 
 const firebaseConfig = {
@@ -21,23 +22,29 @@ const firebaseConfig = {
   messagingSenderId: "992518152359",
   appId: "1:992518152359:web:323dfd9c1a600a2a22bb82",
   measurementId: "G-SDTXD3E405",
-  databaseURL:
-    "https://intuji-frontend-challeng-95d24-default-rtdb.firebaseio.com/",
+  // databaseURL:
+  //   "https://intuji-frontend-challeng-95d24-default-rtdb.firebaseio.com/",
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-const database = getDatabase(firebaseApp);
+export const database = getFirestore(firebaseApp);
 
 const FirebaseContext = createContext({});
 
 export const useFirebase = () => useContext(FirebaseContext);
 
 export const FirebaseProvider = ({ children }: Props) => {
-  const putData = ({ key, data }: IFirebaseContext) => {
-    set(ref(database, key), data);
+  const postData = async ({ key, data, cb }: IFirebaseContext) => {
+    try {
+      await addDoc(collection(database, key), data);
+      cb && cb();
+    } catch (err) {
+      console.log("🚀 ~ postData ~ err:", err);
+    }
   };
+
   return (
-    <FirebaseContext.Provider value={{ putData }}>
+    <FirebaseContext.Provider value={{ postData }}>
       {children}
     </FirebaseContext.Provider>
   );

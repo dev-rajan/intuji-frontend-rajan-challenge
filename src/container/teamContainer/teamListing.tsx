@@ -1,25 +1,30 @@
 import { FilterFilled, SearchOutlined } from "@ant-design/icons";
-import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Button,
   Card,
   Dropdown,
   Input,
-  QRCode,
   Space,
   Table,
   TableProps,
   Tooltip,
 } from "antd";
-import { FC, ReactElement, useState } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 import { MdDelete, MdEdit } from "react-icons/md";
-import { toast } from "react-toastify";
 
 import DeleteModal from "@src/components/DeleteModal";
-import { useDeleteData } from "@src/services/listing.services";
+import { database } from "@src/context/Firebase";
 import { ActionProps } from "@src/types/types";
+import {
+  DocumentData,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+} from "firebase/firestore";
 
 interface DataType {
   id: string;
@@ -32,31 +37,17 @@ interface DataType {
 
 const TableAction: FC<ActionProps> = ({ record }) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const { mutate } = useDeleteData({ url: `/users/${deletingId}` });
-
   const handleDelete = () => {
     setDeleteLoading(true);
-    mutate(
-      {},
-      {
-        onSuccess: () => {
-          toast("Deleted Successfully", { type: "success" });
-          setDeletingId(null);
-          queryClient.invalidateQueries({ queryKey: ["listing-data"] });
-        },
-        onError: () => {
-          toast("Unable to delete data", { type: "error" });
-        },
-        onSettled: () => {
-          setDeleteLoading(false);
-        },
-      }
-    );
+    if (record?.id) {
+      deleteDoc(doc(database, "teams", record.id)).then(() => {
+        setDeleteLoading(false);
+        setDeletingId(null);
+      });
+    }
   };
 
   const handleDeleteCancel = () => {
@@ -76,13 +67,15 @@ const TableAction: FC<ActionProps> = ({ record }) => {
       <Tooltip title="Edit">
         <MdEdit
           style={{ color: "#6c737f", cursor: "pointer", fontSize: 20 }}
-          onClick={() => {}}
+          onClick={() =>
+            navigate({ to: "/teams/create", search: { editingId: record?.id } })
+          }
         />
       </Tooltip>
       <Tooltip title="Delete">
         <MdDelete
           style={{ color: "#ff0b0b91", cursor: "pointer", fontSize: 20 }}
-          onClick={() => setDeletingId(record.id || null)}
+          onClick={() => setDeletingId(record?.id || null)}
         />
       </Tooltip>
     </Space>
@@ -94,12 +87,19 @@ export const columns: TableProps<DataType>["columns"] = [
     title: "Team Name",
     dataIndex: "team_name",
     key: "team_name",
-    // render: (text) => <a>{text}</a>,
   },
   {
     title: "Members",
-    dataIndex: "members",
-    key: "members",
+    dataIndex: "team_members",
+    key: "team_members",
+    render: (team_members: string[]) => {
+      let members = "";
+      team_members.forEach((member: string) => {
+        members += `${member}, `;
+      });
+
+      return <p>{members}</p>;
+    },
   },
   {
     title: "QR Details",
@@ -108,8 +108,8 @@ export const columns: TableProps<DataType>["columns"] = [
   },
   {
     title: "Total Man Hours",
-    dataIndex: "man_hour",
-    key: "man_hour",
+    dataIndex: "billable_hours",
+    key: "billable_hours",
   },
   {
     title: "Action",
@@ -118,55 +118,24 @@ export const columns: TableProps<DataType>["columns"] = [
   },
 ];
 
-export const data: DataType[] = [
-  {
-    id: "1",
-    key: "1",
-    team_name: "Team 1",
-    members: ["Rajan", "Rajesh", "Rajeev", "Rajendra", "Rajat", "Rajnish"],
-    qr_details: (
-      <QRCode
-        size={70}
-        bordered={false}
-        errorLevel="H"
-        value="https://google.com/"
-      />
-    ),
-    man_hour: "27,000",
-  },
-  {
-    id: "2",
-    key: "2",
-    team_name: "Team 2",
-    members: ["Rajan", "Rajesh", "Rajeev", "Rajendra", "Rajat", "Rajnish"],
-    qr_details: (
-      <QRCode
-        size={70}
-        bordered={false}
-        errorLevel="H"
-        value="https://google.com/"
-      />
-    ),
-    man_hour: "20,000",
-  },
-  {
-    id: "3",
-    key: "3",
-    team_name: "Team 3",
-    members: ["Rajan", "Rajesh", "Rajeev", "Rajendra", "Rajat", "Rajnish"],
-    qr_details: (
-      <QRCode
-        size={70}
-        bordered={false}
-        errorLevel="H"
-        value="https://google.com/"
-      />
-    ),
-    man_hour: "27,000",
-  },
-];
-
 const TeamListing = () => {
+  const [teams, setTeams] = useState<Array<DocumentData>>([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      const q = query(collection(database, "teams"));
+
+      const querySnapshot = await getDocs(q);
+      const teamsData: Array<DocumentData> = [];
+      querySnapshot.forEach((doc) => {
+        teamsData.push({ id: doc.id, ...doc.data() } as DocumentData);
+      });
+      setTeams(teamsData);
+    };
+
+    getData();
+  }, []);
+
   return (
     <>
       <Space
@@ -212,7 +181,7 @@ const TeamListing = () => {
           Add Team
         </Link>
       </Space>
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={teams} />
     </>
   );
 };

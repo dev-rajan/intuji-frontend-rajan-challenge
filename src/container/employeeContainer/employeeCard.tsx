@@ -1,5 +1,5 @@
 import { CloseOutlined, UserOutlined } from "@ant-design/icons";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Avatar,
   Button,
@@ -20,7 +20,7 @@ type EmployeeCardProps = {
   record: object;
 };
 const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
-  console.log(record, "haha");
+  const navigate = useNavigate();
 
   return (
     <Drawer
@@ -48,7 +48,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
       />
       <Space direction="vertical">
         <Title level={4} style={{ marginBottom: "0" }}>
-          {record.full_name}
+          {record.name + " " + record.middle_name + " " + record.surname}
         </Title>
         <Text style={{ marginBottom: "1em" }}>{record.email}</Text>
         <Button
@@ -59,7 +59,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
             borderRadius: "18px",
           }}
         >
-          {record.designation}
+          {record.position}
         </Button>
       </Space>
 
@@ -78,7 +78,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.designation}
+            {record.position}
           </Text>
         </Col>
         <Col span={12}>
@@ -105,7 +105,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            Paramatta, Sydney, Australia
+            {record.address}
           </Text>
         </Col>
       </Row>
@@ -152,7 +152,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            User is Billable
+            {record.isBillable ? "User is Billable" : "User is not billable"}
           </Text>
         </Col>
 
@@ -166,28 +166,32 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            40 Hours/Week
+            {record.billable_hours}
           </Text>
         </Col>
       </Row>
 
-      <Link to="/employees/create">
-        <Button
-          style={{
-            marginTop: "1em",
-            backgroundColor: "#F7921E",
-            borderRadius: "5px",
-            color: "white",
-            width: "100%",
-          }}
-        >
-          <MdEdit
-            size={20}
-            style={{ verticalAlign: "top", marginRight: "0.5em" }}
-          />
-          Edit Profile
-        </Button>
-      </Link>
+      <Button
+        style={{
+          marginTop: "1em",
+          backgroundColor: "#F7921E",
+          borderRadius: "5px",
+          color: "white",
+          width: "100%",
+        }}
+        onClick={() =>
+          navigate({
+            to: "/employees/create",
+            search: { editingId: record?.id },
+          })
+        }
+      >
+        <MdEdit
+          size={20}
+          style={{ verticalAlign: "top", marginRight: "0.5em" }}
+        />
+        Edit Profile
+      </Button>
     </Drawer>
   );
 };
