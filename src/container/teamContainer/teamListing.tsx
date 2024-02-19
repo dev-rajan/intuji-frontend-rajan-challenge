@@ -10,21 +10,15 @@ import {
   TableProps,
   Tooltip,
 } from "antd";
-import { FC, ReactElement, useEffect, useState } from "react";
+import { FC, ReactElement, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 import { MdDelete, MdEdit } from "react-icons/md";
 
 import DeleteModal from "@src/components/DeleteModal";
 import { database } from "@src/context/Firebase";
+import { useGetData } from "@src/hooks";
 import { ActionProps } from "@src/types/types";
-import {
-  DocumentData,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-} from "firebase/firestore";
+import { deleteDoc, doc } from "firebase/firestore";
 
 interface DataType {
   id: string;
@@ -119,22 +113,7 @@ export const columns: TableProps<DataType>["columns"] = [
 ];
 
 const TeamListing = () => {
-  const [teams, setTeams] = useState<Array<DocumentData>>([]);
-
-  useEffect(() => {
-    const getData = async () => {
-      const q = query(collection(database, "teams"));
-
-      const querySnapshot = await getDocs(q);
-      const teamsData: Array<DocumentData> = [];
-      querySnapshot.forEach((doc) => {
-        teamsData.push({ id: doc.id, ...doc.data() } as DocumentData);
-      });
-      setTeams(teamsData);
-    };
-
-    getData();
-  }, []);
+  const { data: teams } = useGetData("teams");
 
   return (
     <>

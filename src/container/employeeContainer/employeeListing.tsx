@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Input, Space, Table, TableProps, Tooltip, Typography } from "antd";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
 
@@ -8,15 +8,9 @@ import { SearchOutlined } from "@ant-design/icons";
 import DeleteModal from "@src/components/DeleteModal";
 import EmployeeCard from "@src/container/employeeContainer/employeeCard";
 import { database } from "@src/context/Firebase";
+import { useGetData } from "@src/hooks";
 import { ActionProps } from "@src/types/types";
-import {
-  DocumentData,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-} from "firebase/firestore";
+import { deleteDoc, doc } from "firebase/firestore";
 import { FiPlus } from "react-icons/fi";
 
 const { Text } = Typography;
@@ -149,22 +143,7 @@ const columns: TableProps<DataType>["columns"] = [
 ];
 
 const EmployeeListing = () => {
-  const [employees, setEmployees] = useState<Array<DocumentData>>([]);
-
-  useEffect(() => {
-    const getData = async () => {
-      const q = query(collection(database, "employees"));
-
-      const querySnapshot = await getDocs(q);
-      const teamsData: Array<DocumentData> = [];
-      querySnapshot.forEach((doc) => {
-        teamsData.push({ id: doc.id, ...doc.data() } as DocumentData);
-      });
-      setEmployees(teamsData);
-    };
-
-    getData();
-  }, []);
+  const { data: employees } = useGetData("employees");
 
   return (
     <>

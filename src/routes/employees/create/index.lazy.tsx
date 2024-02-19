@@ -9,7 +9,6 @@ import {
   Breadcrumb,
   Button,
   Checkbox,
-  CheckboxProps,
   Col,
   DatePicker,
   Divider,
@@ -83,7 +82,6 @@ const Index = () => {
       format: (percent) => percent && `${parseFloat(percent.toFixed(2))}%`,
     },
   };
-
 
   const billableLabel = `${checked ? "This user is billable" : "Billable User"}`;
   const { control, handleSubmit, getValues, reset, setValue } = useForm({
@@ -212,7 +210,7 @@ const Index = () => {
           setValue("start_time", docSnap.data().start_time);
           setValue("end_time", docSnap.data().end_time);
           setChecked(docSnap.data().isBillable);
-          setImageUrl(docSnap.data().user_image as string)
+          setImageUrl(docSnap.data().user_image as string);
         } else {
           // docSnap.data() will be undefined in this case
           console.log("No such document!");

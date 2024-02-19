@@ -3,7 +3,13 @@ import { FaUsers, FaUsersCog } from "react-icons/fa";
 
 const { Text } = Typography;
 
-const UserCard = () => {
+const UserCard = ({
+  teamSize,
+  employeeSize,
+}: {
+  teamSize: number;
+  employeeSize: number;
+}) => {
   return (
     <Row gutter={16} style={{ marginBottom: "1em" }}>
       <Col span={4}>
@@ -21,7 +27,7 @@ const UserCard = () => {
               <Text style={{ color: "white" }}>Teams</Text>
               <Statistic
                 style={{ color: "white" }}
-                value={23}
+                value={teamSize}
                 valueStyle={{ color: "white", fontWeight: "bold" }}
               />
             </Space>
@@ -46,7 +52,7 @@ const UserCard = () => {
             <Space direction="vertical">
               <Text style={{ color: "white" }}>Employees</Text>
               <Statistic
-                value={105}
+                value={employeeSize}
                 valueStyle={{ color: "white", fontWeight: "bold" }}
               />
             </Space>
