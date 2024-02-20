@@ -152,7 +152,10 @@ const Index = () => {
   };
 
   const handleCreateEmployee = (data: IEmployee) => {
-    handleUploadImage(getValues("user_image")?.file.originFileObj as FileType)
+    const userImage = getValues("user_image") as unknown as {
+      file: { originFileObj: FileType };
+    } | null;
+    handleUploadImage(userImage?.file.originFileObj as FileType)
       .then((res) => {
         data.user_image = res;
         data.middle_name = getValues("middle_name");
@@ -368,7 +371,7 @@ const Index = () => {
                       name="dob"
                       control={control}
                       defaultValue=""
-                      render={({ field: { onChange, value } }) => {
+                      render={({ field: { onChange } }) => {
                         return (
                           <DatePicker
                             style={{
