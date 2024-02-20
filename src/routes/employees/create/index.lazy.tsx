@@ -97,6 +97,7 @@ const Index = () => {
   };
 
   const billableLabel = `${checked ? "This user is billable" : "Billable User"}`;
+
   const { control, handleSubmit, getValues, reset, setValue } = useForm({
     defaultValues: {
       user_image: "",
@@ -181,6 +182,8 @@ const Index = () => {
         };
 
         postData({ key: "employees", data, cb: createSuccess });
+        window.history.pushState({}, "", "/");
+        window.location.reload();
       })
       .catch((error) => {
         console.error("Error uploading image:", error);
@@ -502,7 +505,7 @@ const Index = () => {
                           <TimePicker
                             use12Hours
                             format="hh:mm A"
-                            onChange={(timeString) => {
+                            onChange={(_time, timeString) => {
                               onChange(timeString);
                             }}
                             placeholder="HH-MM"
@@ -529,7 +532,7 @@ const Index = () => {
                           <TimePicker
                             use12Hours
                             format="hh:mm A"
-                            onChange={(timeString) => {
+                            onChange={(_time, timeString) => {
                               onChange(timeString);
                             }}
                             placeholder="HH-MM"
@@ -632,6 +635,7 @@ const Index = () => {
                 name="isBillable"
                 control={control}
                 render={({ field: { onChange, value } }) => {
+                  setChecked(value);
                   return (
                     <Checkbox
                       style={{ marginBottom: "1em" }}
