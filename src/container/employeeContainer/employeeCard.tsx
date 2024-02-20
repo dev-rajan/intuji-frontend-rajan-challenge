@@ -17,7 +17,7 @@ const { Title, Text } = Typography;
 type EmployeeCardProps = {
   open: boolean;
   onClose(): void;
-  record: object;
+  record: any;
 };
 const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
   const navigate = useNavigate();
@@ -49,9 +49,9 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
       />
       <Space direction="vertical">
         <Title level={4} style={{ marginBottom: "0" }}>
-          {record.name + " " + record.middle_name + " " + record.surname}
+          {record?.name + " " + record?.middle_name + " " + record?.surname}
         </Title>
-        <Text style={{ marginBottom: "1em" }}>{record.email}</Text>
+        <Text style={{ marginBottom: "1em" }}>{record?.email}</Text>
         <Button
           style={{
             fontWeight: "bold",
@@ -60,7 +60,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
             borderRadius: "18px",
           }}
         >
-          {record.position}
+          {record?.position}
         </Button>
       </Space>
 
@@ -79,7 +79,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.position}
+            {record?.position}
           </Text>
         </Col>
         <Col span={12}>
@@ -92,7 +92,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.mobile}
+            {record?.mobile}
           </Text>
         </Col>
 
@@ -106,7 +106,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.address}
+            {record?.address}
           </Text>
         </Col>
       </Row>
@@ -126,7 +126,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.start_time}
+            {record?.start_time}
           </Text>
         </Col>
         <Col span={12}>
@@ -139,7 +139,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.position}
+            {record?.position}
           </Text>
         </Col>
 
@@ -153,7 +153,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.isBillable ? "User is Billable" : "User is not billable"}
+            {record?.isBillable ? "User is Billable" : "User is not billable"}
           </Text>
         </Col>
 
@@ -167,7 +167,7 @@ const EmployeeCard = ({ open, onClose, record }: EmployeeCardProps) => {
           <Text
             style={{ fontSize: "14px", fontWeight: "500", color: "#24252A" }}
           >
-            {record.billable_hours}
+            {record?.billable_hours}
           </Text>
         </Col>
       </Row>

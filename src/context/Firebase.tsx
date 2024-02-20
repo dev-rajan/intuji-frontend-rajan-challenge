@@ -8,10 +8,12 @@ interface Props {
 
 interface IFirebaseContext {
   key: string;
-  data: {
-    [key: string]: string;
-  };
+  data: any;
   cb: () => void;
+}
+
+interface FirebaseContextValue {
+  postData: ({ key, data, cb }: IFirebaseContext) => Promise<void>;
 }
 
 const firebaseConfig = {
@@ -29,7 +31,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 export const database = getFirestore(firebaseApp);
 
-const FirebaseContext = createContext({});
+const FirebaseContext = createContext<FirebaseContextValue>({ postData: async () => {} });
 
 export const useFirebase = () => useContext(FirebaseContext);
 

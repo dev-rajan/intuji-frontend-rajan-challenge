@@ -88,7 +88,7 @@ const Index = () => {
     getData();
   }, []);
 
-  const handleCreateTeam = (data) => {
+  const handleCreateTeam = (data: any) => {
     data.team_members = getValues("team_members");
 
     const createSuccess = () => {

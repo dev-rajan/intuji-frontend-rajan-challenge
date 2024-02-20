@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Input, Space, Table, TableProps, Tooltip, Typography } from "antd";
+import { Input, Space, Table, Tooltip, Typography } from "antd";
 import { FC, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
@@ -91,7 +91,7 @@ const TableAction: FC<ActionProps> = ({ record }) => {
   );
 };
 
-const columns: TableProps<DataType>["columns"] = [
+const columns: any = [
   {
     title: "ID",
     dataIndex: "id",
@@ -100,9 +100,7 @@ const columns: TableProps<DataType>["columns"] = [
   {
     title: "Full Name",
     key: "name",
-    render: (record) => {
-      console.log(record, "hahaha");
-
+    render: (record: any) => {
       return (
         <Text>
           {record.name + " " + record.middle_name + " " + record.surname}
@@ -138,7 +136,7 @@ const columns: TableProps<DataType>["columns"] = [
   {
     title: "Action",
     key: "action",
-    render: (record) => <TableAction record={record} />,
+    render: (record: DataType) => <TableAction record={record} />,
   },
 ];
 

@@ -3,7 +3,6 @@ import UploadOutlined from "@ant-design/icons/UploadOutlined";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { database, useFirebase } from "@src/context/Firebase";
 import { createLazyFileRoute } from "@tanstack/react-router";
-
 import {
   Avatar,
   Breadcrumb,
@@ -22,9 +21,11 @@ import {
   TimePicker,
   Typography,
   Upload,
+  UploadFile,
   UploadProps,
   message,
 } from "antd";
+import { UploadChangeParam } from "antd/es/upload";
 import { doc, getDoc } from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import moment from "moment";
@@ -34,6 +35,18 @@ import { FormItem } from "react-hook-form-antd";
 import * as z from "zod";
 
 const { Title } = Typography;
+
+interface IEmployee {
+  user_image: string;
+  middle_name: string;
+  dob: string;
+  start_time: string;
+  end_time: string;
+  isBillable: boolean;
+  billable_hours: string;
+  gender: string;
+  team: string;
+}
 
 const schema = z.object({
   name: z
@@ -138,7 +151,7 @@ const Index = () => {
     }
   };
 
-  const handleCreateEmployee = (data) => {
+  const handleCreateEmployee = (data: IEmployee) => {
     handleUploadImage(getValues("user_image")?.file.originFileObj as FileType)
       .then((res) => {
         data.user_image = res;
@@ -150,8 +163,6 @@ const Index = () => {
         data.billable_hours = getValues("billable_hours");
         data.gender = getValues("gender");
         data.team = getValues("team");
-
-        console.log(data, "haha");
 
         const createSuccess = () => {
           reset();
@@ -175,7 +186,7 @@ const Index = () => {
     return;
   };
 
-  const handleImageUpload = (info) => {
+  const handleImageUpload = (info: UploadChangeParam<UploadFile<any>>) => {
     if (info.file.status === "done") {
       message.success(`${info.file.name} file uploaded successfully`);
       displayImage(info.file.originFileObj as FileType);
@@ -369,7 +380,7 @@ const Index = () => {
                             // value={value}
                             onChange={(date) => {
                               onChange(date);
-                              handleDob(date);
+                              handleDob(date.toDate()); // Convert Dayjs object to Date object
                             }}
                           />
                         );
@@ -483,11 +494,10 @@ const Index = () => {
                       name="start_time"
                       control={control}
                       defaultValue=""
-                      render={({ field: { onChange, value } }) => {
+                      render={({ field: { onChange } }) => {
                         return (
                           <TimePicker
                             use12Hours
-                            // value={value}
                             format="hh:mm A"
                             onChange={(time, timeString) => {
                               onChange(timeString);

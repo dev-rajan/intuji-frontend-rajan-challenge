@@ -1,15 +1,6 @@
 import { FilterFilled, SearchOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  Button,
-  Card,
-  Dropdown,
-  Input,
-  Space,
-  Table,
-  TableProps,
-  Tooltip,
-} from "antd";
+import { Button, Card, Dropdown, Input, Space, Table, Tooltip } from "antd";
 import { FC, ReactElement, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 import { MdDelete, MdEdit } from "react-icons/md";
@@ -76,7 +67,7 @@ const TableAction: FC<ActionProps> = ({ record }) => {
   );
 };
 
-export const columns: TableProps<DataType>["columns"] = [
+const columns: any = [
   {
     title: "Team Name",
     dataIndex: "team_name",
@@ -108,7 +99,7 @@ export const columns: TableProps<DataType>["columns"] = [
   {
     title: "Action",
     key: "action",
-    render: (record) => <TableAction record={record} />,
+    render: (record: DataType) => <TableAction record={record} />,
   },
 ];
 
