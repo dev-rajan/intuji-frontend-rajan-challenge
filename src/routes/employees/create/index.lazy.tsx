@@ -502,7 +502,7 @@ const Index = () => {
                           <TimePicker
                             use12Hours
                             format="hh:mm A"
-                            onChange={(time, timeString) => {
+                            onChange={(timeString) => {
                               onChange(timeString);
                             }}
                             placeholder="HH-MM"
@@ -529,7 +529,7 @@ const Index = () => {
                           <TimePicker
                             use12Hours
                             format="hh:mm A"
-                            onChange={(time, timeString) => {
+                            onChange={(timeString) => {
                               onChange(timeString);
                             }}
                             placeholder="HH-MM"
